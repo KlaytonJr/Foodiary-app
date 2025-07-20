@@ -1,6 +1,6 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { OptionsSelector } from "../OptionsSelector";
-import { SignUpFormData } from "./SignUpSchema";
+import { SignUpFormData } from "./signUpSchema";
 
 export function GenderStep() {
   const form = useFormContext<SignUpFormData>();
@@ -8,26 +8,21 @@ export function GenderStep() {
   return (
     <Controller
       control={form.control}
-      name="goal"
+      name="gender"
       render={({ field }) => (
         <OptionsSelector
           value={field.value}
           onChange={field.onChange}
           options={[
             {
-              icon: "🥦",
-              title: "Perder peso",
-              value: "lose",
+              icon: "👨",
+              title: "Masculino",
+              value: "male",
             },
             {
-              icon: "🍍",
-              title: "Manter o peso",
-              value: "maintain",
-            },
-            {
-              icon: "🥩",
-              title: "Ganhar peso",
-              value: "gain",
+              icon: "👩",
+              title: "Feminino",
+              value: "female",
             },
           ]}
         />
