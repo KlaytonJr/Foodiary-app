@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react-native";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { View } from "react-native";
+import { View, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { AuthLayout } from "../../components/AuthLayout";
 import { Button } from "../../components/Button";
 import { AccountStep } from "../../components/SignUpSteps/AccountStep";
@@ -90,27 +90,29 @@ export default function SignUp() {
       title={currentStep.title}
       subtitle={currentStep.subtitle}
     >
-      <View className="justify-between flex-1">
-        <FormProvider {...form}>
-          <currentStep.Component />
-        </FormProvider>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="justify-between flex-1">
+          <FormProvider {...form}>
+            <currentStep.Component />
+          </FormProvider>
 
-        <View className="flex-row justify-between gap-4">
-          <Button size="icon" color="gray" onPress={handlePreviousStep}>
-            <ArrowLeftIcon size={20} color={colors.black[700]} />
-          </Button>
+          <View className="flex-row justify-between gap-4">
+            <Button size="icon" color="gray" onPress={handlePreviousStep}>
+              <ArrowLeftIcon size={20} color={colors.black[700]} />
+            </Button>
 
-          {isLastStep ? (
-            <Button className="flex-1" onPress={handleNextStep}>
-              Criar conta
-            </Button>
-          ) : (
-            <Button size="icon" onPress={handleNextStep}>
-              <ArrowRightIcon size={20} color={colors.black[700]} />
-            </Button>
-          )}
+            {isLastStep ? (
+              <Button className="flex-1" onPress={handleNextStep}>
+                Criar conta
+              </Button>
+            ) : (
+              <Button size="icon" onPress={handleNextStep}>
+                <ArrowRightIcon size={20} color={colors.black[700]} />
+              </Button>
+            )}
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </AuthLayout>
   );
 }
