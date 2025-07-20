@@ -50,6 +50,11 @@ export function AudioModal({ onClose, open }: IAudioModalProps) {
   }, []);
 
   async function handleStartRecording() {
+    await setAudioModeAsync({
+      allowsRecording: true,
+      playsInSilentMode: true,
+    });
+
     await audioRecorder.prepareToRecordAsync();
     audioRecorder.record();
   }
@@ -66,6 +71,20 @@ export function AudioModal({ onClose, open }: IAudioModalProps) {
   function handleCloseModal() {
     setAudioUri(null);
     onClose();
+  }
+
+  async function handlePlayback() {
+    await setAudioModeAsync({
+      allowsRecording: false,
+      playsInSilentMode: true,
+    });
+
+    if (player.playing) {
+      await player.pause();
+    } else {
+      player.seekTo(0);
+      player.play();
+    }
   }
 
   return (
@@ -146,20 +165,12 @@ export function AudioModal({ onClose, open }: IAudioModalProps) {
                 </Button>
 
                 {!player.playing && (
-                  <Button
-                    size="icon"
-                    color="dark"
-                    onPress={() => player.play()}
-                  >
+                  <Button size="icon" color="dark" onPress={handlePlayback}>
                     <PlayIcon size={20} color={colors.lime[600]} />
                   </Button>
                 )}
                 {player.playing && (
-                  <Button
-                    size="icon"
-                    color="dark"
-                    onPress={() => player.pause()}
-                  >
+                  <Button size="icon" color="dark" onPress={handlePlayback}>
                     <PauseIcon size={20} color={colors.lime[600]} />
                   </Button>
                 )}
