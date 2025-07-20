@@ -1,3 +1,12 @@
+import { useMutation } from "@tanstack/react-query";
+import {
+  AudioModule,
+  RecordingPresets,
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioRecorder,
+  useAudioRecorderState,
+} from "expo-audio";
 import { StatusBar } from "expo-status-bar";
 import {
   CheckIcon,
@@ -11,17 +20,10 @@ import {
 import { useEffect, useState } from "react";
 import { Alert, Modal, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { httpClient } from "../services/httpClient";
 import { colors } from "../styles/colors";
 import { cn } from "../utils/cn";
 import { Button } from "./Button";
-import {
-  AudioModule,
-  RecordingPresets,
-  setAudioModeAsync,
-  useAudioPlayer,
-  useAudioRecorder,
-  useAudioRecorderState,
-} from "expo-audio";
 
 interface IAudioModalProps {
   open: boolean;
@@ -35,11 +37,33 @@ export function AudioModal({ onClose, open }: IAudioModalProps) {
   const { isRecording } = useAudioRecorderState(audioRecorder);
   const player = useAudioPlayer(audioUri);
 
+  const { mutateAsync: createMeal } = useMutation({
+    mutationFn: async (uri: string) => {
+      const { data } = await httpClient.post("/meals", {
+        fileType: "audio/m4a",
+      });
+
+      const { uploadURL } = data;
+
+      const response = await fetch(uri);
+      const file = await response.blob();
+
+      await fetch(uploadURL, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+    },
+  });
+
   useEffect(() => {
     (async () => {
       const status = await AudioModule.requestRecordingPermissionsAsync();
+
       if (!status.granted) {
-        Alert.alert("Permission to access microphone was denied");
+        Alert.alert("A permissão para acessar o microfone foi negada.");
       }
 
       setAudioModeAsync({
@@ -50,11 +74,6 @@ export function AudioModal({ onClose, open }: IAudioModalProps) {
   }, []);
 
   async function handleStartRecording() {
-    await setAudioModeAsync({
-      allowsRecording: true,
-      playsInSilentMode: true,
-    });
-
     await audioRecorder.prepareToRecordAsync();
     audioRecorder.record();
   }
@@ -71,20 +90,6 @@ export function AudioModal({ onClose, open }: IAudioModalProps) {
   function handleCloseModal() {
     setAudioUri(null);
     onClose();
-  }
-
-  async function handlePlayback() {
-    await setAudioModeAsync({
-      allowsRecording: false,
-      playsInSilentMode: true,
-    });
-
-    if (player.playing) {
-      await player.pause();
-    } else {
-      player.seekTo(0);
-      player.play();
-    }
   }
 
   return (
@@ -165,17 +170,25 @@ export function AudioModal({ onClose, open }: IAudioModalProps) {
                 </Button>
 
                 {!player.playing && (
-                  <Button size="icon" color="dark" onPress={handlePlayback}>
+                  <Button
+                    size="icon"
+                    color="dark"
+                    onPress={() => player.play()}
+                  >
                     <PlayIcon size={20} color={colors.lime[600]} />
                   </Button>
                 )}
                 {player.playing && (
-                  <Button size="icon" color="dark" onPress={handlePlayback}>
+                  <Button
+                    size="icon"
+                    color="dark"
+                    onPress={() => player.pause()}
+                  >
                     <PauseIcon size={20} color={colors.lime[600]} />
                   </Button>
                 )}
 
-                <Button size="icon">
+                <Button size="icon" onPress={() => createMeal(audioUri)}>
                   <CheckIcon size={20} color={colors.black[700]} />
                 </Button>
               </View>
